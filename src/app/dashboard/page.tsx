@@ -1,6 +1,15 @@
 import { Suspense } from 'react';
 import { getDashboardData } from '@/lib/data';
-import { KPIGrid, BarChart, ActivityList } from '@/components/dashboard';
+import { 
+  KPIGrid, 
+  RechartsLineChart, 
+  RechartsBarChart,
+  DonutChart,
+  ActivityList,
+  monthlyTrendData,
+  projectStatusData,
+  trafficSourceData,
+} from '@/components/dashboard';
 import { SkeletonCard } from '@/components/ui';
 
 export const dynamic = 'force-dynamic';
@@ -12,9 +21,36 @@ async function DashboardContent() {
     <>
       <KPIGrid kpis={kpis} />
 
+      {/* Charts Row 1: Line/Area Chart and Bar Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <BarChart data={chartData} title="Weekly Revenue" />
-        <ActivityList activities={recentActivity} />
+        <RechartsLineChart 
+          data={monthlyTrendData} 
+          title="Revenue Trend" 
+          showArea 
+        />
+        <RechartsBarChart 
+          data={chartData} 
+          title="Weekly Revenue" 
+        />
+      </div>
+
+      {/* Charts Row 2: Donut Charts and Activity */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <DonutChart 
+          data={projectStatusData} 
+          title="Project Status"
+          centerValue="25"
+          centerLabel="Total Projects"
+        />
+        <DonutChart 
+          data={trafficSourceData} 
+          title="Traffic Sources"
+          centerValue="11.2k"
+          centerLabel="Total Visitors"
+        />
+        <div className="md:col-span-2 lg:col-span-1">
+          <ActivityList activities={recentActivity} />
+        </div>
       </div>
     </>
   );
@@ -29,8 +65,13 @@ function DashboardSkeleton() {
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <SkeletonCard />
-        <SkeletonCard />
+        <SkeletonCard className="h-72" />
+        <SkeletonCard className="h-72" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <SkeletonCard className="h-72" />
+        <SkeletonCard className="h-72" />
+        <SkeletonCard className="h-72 md:col-span-2 lg:col-span-1" />
       </div>
     </>
   );

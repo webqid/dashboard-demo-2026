@@ -15,9 +15,9 @@ export function Skeleton({ className }: SkeletonProps) {
   );
 }
 
-export function SkeletonCard() {
+export function SkeletonCard({ className }: { className?: string } = {}) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-6">
+    <div className={cn('rounded-lg border border-border bg-surface p-6', className)}>
       <div className="space-y-3">
         <Skeleton className="h-4 w-1/3" />
         <Skeleton className="h-8 w-1/2" />
