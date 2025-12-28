@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode (toggle .dark on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ========================================
+   webqid. Design System - Theme Variables
+   ======================================== */
+
+/* Light theme (default) */
+:root {
+  color-scheme: light;
+  --wq-background: #F9FAFB;
+  --wq-surface: #FFFFFF;
+  --wq-surface-muted: #F1F5F9;
+  --wq-border: #E2E8F0;
+  --wq-text-primary: #0F172A;
+  --wq-text-secondary: #475569;
+  --wq-text-muted: #64748B;
+  --wq-brand: #2DD4BF;
+  --wq-brand-soft: #99F6E4;
+  --wq-brand-muted: #5EEAD4;
+  --wq-success: #16A34A;
+  --wq-warning: #CA8A04;
+  --wq-error: #DC2626;
+  --wq-info: #0284C7;
+}
+
+/* Dark theme - use html.dark for higher specificity than :root */
+html.dark {
+  color-scheme: dark;
+  --wq-background: #0F172A;
+  --wq-surface: #1E293B;
+  --wq-surface-muted: #334155;
+  --wq-border: #475569;
+  --wq-text-primary: #F8FAFC;
+  --wq-text-secondary: #CBD5E1;
+  --wq-text-muted: #94A3B8;
+  --wq-brand: #2DD4BF;
+  --wq-brand-soft: #134E4A;
+  --wq-brand-muted: #5EEAD4;
+  --wq-success: #22C55E;
+  --wq-warning: #EAB308;
+  --wq-error: #EF4444;
+  --wq-info: #38BDF8;
+}
+
+/* Tailwind theme tokens - reference CSS variables for dynamic theming */
+@theme {
+  --font-sans: var(--font-geist), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', monospace;
+  --color-background: var(--wq-background);
+  --color-surface: var(--wq-surface);
+  --color-surface-muted: var(--wq-surface-muted);
+  --color-border: var(--wq-border);
+  --color-text-primary: var(--wq-text-primary);
+  --color-text-secondary: var(--wq-text-secondary);
+  --color-text-muted: var(--wq-text-muted);
+  --color-brand: var(--wq-brand);
+  --color-brand-soft: var(--wq-brand-soft);
+  --color-brand-muted: var(--wq-brand-muted);
+  --color-success: var(--wq-success);
+  --color-warning: var(--wq-warning);
+  --color-error: var(--wq-error);
+  --color-info: var(--wq-info);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--wq-background);
+  color: var(--wq-text-primary);
+  font-feature-settings: 'rlig' 1, 'calt' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+}
+
+/* ========================================
+   Motion (restrained)
+   ======================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+    transition-timing-function: ease-out;
+    transition-duration: 150ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+   Scrollbar (subtle)
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--wq-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--wq-text-muted);
+}
+
+/* ========================================
+   Focus states
+   ======================================== */
+
+:focus-visible {
+  outline: 2px solid var(--wq-brand);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   Utilities
+   ======================================== */
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
