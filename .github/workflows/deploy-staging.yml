@@ -33,13 +33,14 @@ jobs:
         env:
           NEXT_PUBLIC_APP_ENV: staging
 
+      - name: List build output
+        run: ls -la .next/ || echo "No .next directory found"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: staging-build-${{ github.sha }}
-          path: |
-            .next/
-            !.next/cache/
+          path: .next
           if-no-files-found: error
           retention-days: 14
 
