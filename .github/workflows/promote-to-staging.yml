@@ -1,0 +1,84 @@
+# Promote Development to Staging
+# Creates a PR from development to staging branch
+
+name: Promote to Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-staging-pr:
+    name: Create Staging PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: version
+        run: |
+          npm version ${{ inputs.version_bump }} --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Commit version bump
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
+          git push origin development
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: release/v${{ steps.version.outputs.version }}
+          base: staging
+          title: "🚀 Release v${{ steps.version.outputs.version }} to Staging"
+          body: |
+            ## Release v${{ steps.version.outputs.version }}
+            
+            This PR promotes changes from `development` to `staging`.
+            
+            ### Version Bump
+            - Type: `${{ inputs.version_bump }}`
+            - New Version: `${{ steps.version.outputs.version }}`
+            
+            ### Pre-merge Checklist
+            - [ ] All CI checks pass
+            - [ ] Code review completed
+            - [ ] Testing on staging environment planned
+            
+            ---
+            *This PR was automatically created by the release workflow.*
+          labels: |
+            release
+            staging
+          draft: false

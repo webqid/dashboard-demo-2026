@@ -3,9 +3,9 @@
 import {
   createContext,
   useContext,
-  useState,
   useEffect,
   useCallback,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 
@@ -36,24 +36,71 @@ function getStoredTheme(): Theme {
   return 'system';
 }
 
+// External store for theme to avoid setState in effects
+let themeListeners: Array<() => void> = [];
+let currentStoredTheme: Theme | null = null;
+let isMounted = false;
+
+function subscribeToTheme(callback: () => void) {
+  themeListeners.push(callback);
+  // Mark as mounted when first subscriber connects (client-side)
+  if (!isMounted) {
+    isMounted = true;
+    // Initialize stored theme on mount
+    currentStoredTheme = getStoredTheme();
+  }
+  return () => {
+    themeListeners = themeListeners.filter((l) => l !== callback);
+  };
+}
+
+function getThemeSnapshot(): Theme {
+  if (currentStoredTheme === null) {
+    currentStoredTheme = getStoredTheme();
+  }
+  return currentStoredTheme;
+}
+
+function getServerThemeSnapshot(): Theme {
+  return 'system';
+}
+
+function notifyThemeListeners() {
+  themeListeners.forEach((l) => l());
+}
+
+// Mounted state external store
+function subscribeMounted(callback: () => void) {
+  themeListeners.push(callback);
+  return () => {
+    themeListeners = themeListeners.filter((l) => l !== callback);
+  };
+}
+
+function getMountedSnapshot(): boolean {
+  return isMounted;
+}
+
+function getMountedServerSnapshot(): boolean {
+  return false;
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light');
-  const [mounted, setMounted] = useState(false);
+  const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerThemeSnapshot);
+  const mounted = useSyncExternalStore(subscribeMounted, getMountedSnapshot, getMountedServerSnapshot);
 
-  // Initialize theme from storage
-  useEffect(() => {
-    const stored = getStoredTheme();
-    setThemeState(stored);
-    setMounted(true);
-  }, []);
+  // Compute resolved theme
+  const resolvedTheme: ResolvedTheme = mounted
+    ? theme === 'system'
+      ? getSystemTheme()
+      : theme
+    : 'light';
 
-  // Resolve and apply theme
+  // Apply theme to document
   useEffect(() => {
     if (!mounted) return;
 
     const resolved = theme === 'system' ? getSystemTheme() : theme;
-    setResolvedTheme(resolved);
 
     // Apply to document - toggle dark class based on resolved theme
     const root = document.documentElement;
@@ -71,12 +118,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => {
       const newResolved = e.matches ? 'dark' : 'light';
-      setResolvedTheme(newResolved);
       if (newResolved === 'dark') {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
+      // Trigger re-render for components using resolved theme
+      notifyThemeListeners();
     };
 
     mediaQuery.addEventListener('change', handleChange);
@@ -84,8 +132,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme, mounted]);
 
   const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
+    currentStoredTheme = newTheme;
     localStorage.setItem(STORAGE_KEY, newTheme);
+    notifyThemeListeners();
   }, []);
 
   // Prevent flash by not rendering until mounted

@@ -1,0 +1,67 @@
+# Promote Staging to Production (Main)
+# Creates a PR from staging to main and handles release
+
+name: Promote to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create GitHub Release'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-production-pr:
+    name: Create Production PR
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      pr_number: ${{ steps.create-pr.outputs.pull-request-number }}
+    steps:
+      - name: Checkout staging
+        uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 0
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        id: create-pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: production/v${{ steps.version.outputs.version }}
+          base: main
+          title: "🎉 Production Release v${{ steps.version.outputs.version }}"
+          body: |
+            ## Production Release v${{ steps.version.outputs.version }}
+            
+            This PR promotes changes from `staging` to `main` (production).
+            
+            ### Pre-merge Checklist
+            - [ ] All CI checks pass
+            - [ ] Staging environment testing completed
+            - [ ] Production deployment plan reviewed
+            - [ ] Rollback plan documented
+            
+            ### Post-merge Actions
+            - GitHub Release will be created automatically (if enabled)
+            - Production deployment will be triggered
+            
+            ---
+            *This PR was automatically created by the release workflow.*
+          labels: |
+            release
+            production
+          draft: false
