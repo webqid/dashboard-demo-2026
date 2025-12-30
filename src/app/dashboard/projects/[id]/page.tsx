@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getProject, getUsers } from '@/lib/data';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Avatar, Skeleton } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Avatar, Skeleton } from '@/components/ui';
 import { IconChevronRight } from '@/components/icons';
 import { getStatusColor, formatRelativeTime } from '@/lib/utils';
 

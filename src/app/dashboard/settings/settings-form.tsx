@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import type { UserSettings } from '@/types';
-import { Card, CardHeader, CardTitle, CardContent, Button, Switch, Input } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Switch } from '@/components/ui';
 import { updateSettingsAction } from './actions';
 import { useTheme } from '@/lib/theme';
 
@@ -11,15 +11,13 @@ interface SettingsFormProps {
 }
 
 export function SettingsForm({ initialSettings }: SettingsFormProps) {
-  const [settings, setSettings] = useState(initialSettings);
+  const { theme: currentTheme, setTheme } = useTheme();
+  const [settings, setSettings] = useState(() => ({
+    ...initialSettings,
+    theme: currentTheme,
+  }));
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
-  const { theme: currentTheme, setTheme } = useTheme();
-
-  // Sync settings state with actual theme on mount
-  useEffect(() => {
-    setSettings((prev) => ({ ...prev, theme: currentTheme }));
-  }, [currentTheme]);
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setSettings({ ...settings, theme: newTheme });
