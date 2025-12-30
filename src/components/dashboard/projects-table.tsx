@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Project } from '@/types';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { IconChevronRight } from '@/components/icons';
 import { getStatusColor } from '@/lib/utils';
 
